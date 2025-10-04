@@ -7,7 +7,9 @@
   "scripts": {
     "book": "node booking_bot.js",
     "classes": "node get_classes_script.js",
-    "setup-secrets": "node scripts/setup-secrets.js"
+    "setup-secrets": "node scripts/setup-secrets.js",
+    "setup-cron": "./scripts/setup-cron.sh",
+    "cron": "./scripts/cron-manager.sh"
   },
   "dependencies": {
     "node-fetch": "^3.3.0"

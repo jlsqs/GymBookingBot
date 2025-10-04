@@ -120,6 +120,16 @@ npm run classes 2024-01-15
 node auth_manager.js
 ```
 
+### Set Up Cron Job (Automated Booking)
+
+```bash
+# Interactive setup
+npm run setup-cron
+
+# Or manage cron jobs
+npm run cron
+```
+
 ## 🏗️ Project Structure
 
 ```
