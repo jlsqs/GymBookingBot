@@ -1,0 +1,80 @@
+name: Gym Booking Bot
+
+on:
+  # Triggered by GitHub API calls
+  repository_dispatch:
+    types: [booking-request]
+  
+  # Allow manual triggers
+  workflow_dispatch:
+    inputs:
+      class_type:
+        description: 'Class type to book (monday, tuesday, wednesday, thursday, friday)'
+        required: false
+        default: 'auto'
+        type: choice
+        options:
+        - auto
+        - monday
+        - tuesday
+        - wednesday
+        - thursday
+        - friday
+
+jobs:
+  book-class:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm install
+      
+    - name: Create environment file
+      run: |
+        echo "CLIENT_ID=${{ secrets.CLIENT_ID }}" >> .env
+        echo "CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}" >> .env
+        echo "USER_ACCOUNT_ID=${{ secrets.USER_ACCOUNT_ID }}" >> .env
+        echo "DEVICE_ID=${{ secrets.DEVICE_ID }}" >> .env
+        echo "BASE_URL=https://api.xplor-active.com" >> .env
+        echo "APP_NAME=frapp-montgolfiere-ios" >> .env
+        echo "APP_SPACE_ID=montgolfiere" >> .env
+        echo "APP_VERSION=2025.9.5" >> .env
+        echo "USER_EMAIL=${{ secrets.USER_EMAIL }}" >> .env
+        echo "DAYS_IN_ADVANCE=5" >> .env
+        echo "TEST_MODE=false" >> .env
+        echo "LOG_LEVEL=info" >> .env
+        
+    - name: Create tokens file
+      run: |
+        echo '{
+          "accessToken": "${{ secrets.ACCESS_TOKEN }}",
+          "refreshToken": "${{ secrets.REFRESH_TOKEN }}",
+          "tokenExpiry": '${{ secrets.TOKEN_EXPIRY }}'
+        }' > tokens.json
+        
+    - name: Run booking bot
+      run: |
+        echo "🤖 Starting GymBookingBot..."
+        echo "📅 Triggered by: ${{ github.event.action }}"
+        echo "🎯 Class type: ${{ github.event.inputs.class_type || 'auto' }}"
+        echo "⏰ Time: $(date)"
+        npm run book
+        
+    - name: Upload logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: booking-logs-${{ github.run_number }}
+        path: |
+          *.log
+          classes_*.json
+        retention-days: 30

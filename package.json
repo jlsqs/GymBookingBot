@@ -11,7 +11,13 @@
     "setup-cron": "./scripts/setup-cron.sh",
     "cron": "./scripts/cron-manager.sh",
     "webhook": "node webhook.js",
-    "start": "node webhook.js"
+    "start": "node webhook.js",
+    "trigger": "node scripts/trigger-github-action.js",
+    "trigger-monday": "node scripts/trigger-github-action.js monday",
+    "trigger-tuesday": "node scripts/trigger-github-action.js tuesday",
+    "trigger-wednesday": "node scripts/trigger-github-action.js wednesday",
+    "trigger-thursday": "node scripts/trigger-github-action.js thursday",
+    "trigger-friday": "node scripts/trigger-github-action.js friday"
   },
   "dependencies": {
     "node-fetch": "^3.3.0"
