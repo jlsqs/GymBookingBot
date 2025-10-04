@@ -75,6 +75,7 @@ jobs:
       with:
         name: booking-logs-${{ github.run_number }}
         path: |
-          *.log
+          gym_booking.log
           classes_*.json
         retention-days: 30
+        if-no-files-found: ignore
