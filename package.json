@@ -9,7 +9,9 @@
     "classes": "node get_classes_script.js",
     "setup-secrets": "node scripts/setup-secrets.js",
     "setup-cron": "./scripts/setup-cron.sh",
-    "cron": "./scripts/cron-manager.sh"
+    "cron": "./scripts/cron-manager.sh",
+    "webhook": "node webhook.js",
+    "start": "node webhook.js"
   },
   "dependencies": {
     "node-fetch": "^3.3.0"

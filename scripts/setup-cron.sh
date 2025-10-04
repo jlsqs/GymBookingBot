@@ -49,12 +49,30 @@ fi
 
 echo ""
 
-# Create the cron job entry
-CRON_JOB="30 6 * * 1-5 cd $PROJECT_DIR && /usr/bin/node booking_bot.js >> $PROJECT_DIR/booking.log 2>&1"
+# Create the cron job entries with specific times
+CRON_JOBS=(
+    "# Wednesday 07:29:57 → books Monday class"
+    "57 29 7 * * 3  cd $PROJECT_DIR && /usr/local/bin/node booking_bot.js >> $PROJECT_DIR/gym_booking.log 2>&1"
+    ""
+    "# Thursday 10:59:57 → books Tuesday class"
+    "57 59 10 * * 4  cd $PROJECT_DIR && /usr/local/bin/node booking_bot.js >> $PROJECT_DIR/gym_booking.log 2>&1"
+    ""
+    "# Friday 07:29:57 → books Wednesday class"
+    "57 29 7 * * 5  cd $PROJECT_DIR && /usr/local/bin/node booking_bot.js >> $PROJECT_DIR/gym_booking.log 2>&1"
+    ""
+    "# Saturday 08:34:57 → books Thursday class"
+    "57 34 8 * * 6  cd $PROJECT_DIR && /usr/local/bin/node booking_bot.js >> $PROJECT_DIR/gym_booking.log 2>&1"
+    ""
+    "# Sunday 12:59:57 → books Friday class"
+    "57 59 12 * * 0  cd $PROJECT_DIR && /usr/local/bin/node booking_bot.js >> $PROJECT_DIR/gym_booking.log 2>&1"
+)
 
 echo "🕐 Cron Job Configuration:"
-echo "   Schedule: Every weekday at 6:30 AM"
-echo "   Command: $CRON_JOB"
+echo "   Wednesday 07:29:57 → books Monday class"
+echo "   Thursday 10:59:57 → books Tuesday class"
+echo "   Friday 07:29:57 → books Wednesday class"
+echo "   Saturday 08:34:57 → books Thursday class"
+echo "   Sunday 12:59:57 → books Friday class"
 echo ""
 
 # Show current crontab
@@ -62,35 +80,38 @@ echo "📋 Current crontab:"
 crontab -l 2>/dev/null || echo "   No crontab found"
 echo ""
 
-# Ask if user wants to add the cron job
-read -p "Do you want to add this cron job? (y/n): " -n 1 -r
+# Ask if user wants to add the cron jobs
+read -p "Do you want to add these cron jobs? (y/n): " -n 1 -r
 echo ""
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    # Add the cron job
-    (crontab -l 2>/dev/null; echo "$CRON_JOB") | crontab -
+    # Remove existing GymBookingBot cron jobs first
+    crontab -l 2>/dev/null | grep -v "booking_bot.js" | crontab -
+    
+    # Add the new cron jobs
+    (crontab -l 2>/dev/null; printf '%s\n' "${CRON_JOBS[@]}") | crontab -
     
     if [ $? -eq 0 ]; then
-        echo "✅ Cron job added successfully!"
+        echo "✅ Cron jobs added successfully!"
         echo ""
         echo "📋 Updated crontab:"
         crontab -l
         echo ""
-        echo "📝 Logs will be saved to: $PROJECT_DIR/booking.log"
+        echo "📝 Logs will be saved to: $PROJECT_DIR/gym_booking.log"
         echo ""
         echo "🔧 To manage your cron jobs:"
         echo "   View: crontab -l"
         echo "   Edit: crontab -e"
         echo "   Remove: crontab -r"
     else
-        echo "❌ Failed to add cron job"
+        echo "❌ Failed to add cron jobs"
         exit 1
     fi
 else
-    echo "ℹ️  Cron job not added. You can add it manually later with:"
+    echo "ℹ️  Cron jobs not added. You can add them manually later with:"
     echo "   crontab -e"
-    echo "   Then add this line:"
-    echo "   $CRON_JOB"
+    echo "   Then add these lines:"
+    printf '%s\n' "${CRON_JOBS[@]}"
 fi
 
 echo ""
