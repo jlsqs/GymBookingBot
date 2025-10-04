@@ -71,7 +71,8 @@ async function runBookingBot() {
 }
 
 // Simple HTTP server
-const server = require('http').createServer(async (req, res) => {
+import http from 'http';
+const server = http.createServer(async (req, res) => {
   const timestamp = new Date().toISOString();
   
   // Set CORS headers
