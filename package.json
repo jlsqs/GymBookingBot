@@ -1,0 +1,16 @@
+cat > package.json << 'EOF'
+{
+  "name": "gym-booking-bot",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Automated gym class booking bot using API",
+  "main": "booking_bot.js",
+  "scripts": {
+    "book": "node booking_bot.js",
+    "classes": "node get_classes_script.js"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.0"
+  }
+}
+EOF
