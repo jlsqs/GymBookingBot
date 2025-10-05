@@ -181,12 +181,20 @@ async function findAndBookClass(auth) {
 
         // Calculate booking time: TODAY at the same time as the class + 3 seconds
         // (Booking opens 5 days before the class, which is TODAY)
+        // Convert to UTC for consistent timing
         const now = new Date();
-        const bookingTime = new Date(classDate);
-        bookingTime.setFullYear(now.getFullYear(), now.getMonth(), now.getDate());
-        bookingTime.setSeconds(3); // Add 3 seconds to ensure booking is open
+        const classTimeUTC = new Date(classDate);
         
-        log(`🕐 Booking opens at: ${bookingTime.toLocaleString('fr-FR')} (today)`);
+        // Get the time components from the class (which is in France time)
+        const classHour = classTimeUTC.getHours();
+        const classMinute = classTimeUTC.getMinutes();
+        
+        // Create booking time in UTC (France time - 2 hours)
+        const bookingTime = new Date(now);
+        bookingTime.setUTCHours(classHour - 2, classMinute, 3, 0); // Convert France time to UTC
+        
+        log(`🕐 Booking opens at: ${bookingTime.toLocaleString('fr-FR')} (France time)`);
+        log(`🕐 Booking opens at: ${bookingTime.toISOString()} (UTC)`);
         
         // Wait until booking time (unless in test mode)
         if (TEST_MODE) {
