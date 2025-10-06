@@ -8,7 +8,7 @@ export const WAITLIST_CONFIG = {
             name: 'bootcamp',
             time: '07:30',
             dayOfWeek: 3, // Wednesday (0=Sunday, 1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday)
-            location: 'Inval',
+            location: null, // Any location (will match any bootcamp at 07:30 on Wednesday)
             instructor: 'TBA', // Any instructor (will match Patrice)
             priority: 1 // Highest priority
         }

@@ -52,7 +52,7 @@ class WaitlistBot {
             const isMatch = cls.name.toLowerCase().includes(targetClass.name.toLowerCase()) &&
                    dayOfWeek === targetClass.dayOfWeek &&
                    time === targetClass.time &&
-                   (targetClass.location ? cls.locationName.includes(targetClass.location) : true) &&
+                   (targetClass.location && targetClass.location !== null ? cls.locationName.includes(targetClass.location) : true) &&
                    (targetClass.instructor && targetClass.instructor !== 'TBA' ? 
                     cls.coach?.name?.trim() === targetClass.instructor.trim() : true);
             
