@@ -1,0 +1,74 @@
+name: Waitlist Bot
+
+on:
+  schedule:
+    # Run every 5 minutes during peak hours (6-9 AM, 12-2 PM, 6-8 PM UTC)
+    - cron: '*/5 6-8,12-13,18-19 * * *'
+    # Run every 15 minutes during normal hours
+    - cron: '*/15 9-11,14-17,20-23 * * *'
+    # Run every 30 minutes during night hours
+    - cron: '*/30 0-5 * * *'
+  workflow_dispatch:
+    inputs:
+      test_mode:
+        description: 'Run in test mode (no actual booking)'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  waitlist-monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Create tokens.json from secrets
+        run: |
+          echo "Creating tokens.json from GitHub Secrets..."
+          echo '{' > tokens.json
+          echo '  "accessToken": "${{ secrets.ACCESS_TOKEN }}",' >> tokens.json
+          echo '  "refreshToken": "${{ secrets.REFRESH_TOKEN }}",' >> tokens.json
+          echo '  "tokenExpiry": ${{ secrets.TOKEN_EXPIRY }}' >> tokens.json
+          echo '}' >> tokens.json
+          echo "Tokens created successfully"
+
+      - name: Run waitlist bot
+        env:
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          USER_ACCOUNT_ID: ${{ secrets.USER_ACCOUNT_ID }}
+          DEVICE_ID: ${{ secrets.DEVICE_ID }}
+          USER_EMAIL: ${{ secrets.USER_EMAIL }}
+          GITHUB_ACTIONS: true
+          TEST_MODE: ${{ inputs.test_mode }}
+        run: |
+          echo "🤖 Starting Waitlist Bot..."
+          echo "📅 Monitoring: Wednesday Bootcamp at 07:30"
+          echo "⏰ Time: $(date)"
+          echo "🧪 Test Mode: ${{ inputs.test_mode }}"
+          
+          if [ "${{ inputs.test_mode }}" = "true" ]; then
+            npm run waitlist-test
+          else
+            npm run waitlist
+          fi
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: waitlist-logs-${{ github.run_number }}
+          path: |
+            waitlist-bot.log
+            classes_*.json
+          retention-days: 7
+          if-no-files-found: ignore

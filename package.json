@@ -17,7 +17,10 @@
     "trigger-tuesday": "node scripts/trigger-github-action.js tuesday",
     "trigger-wednesday": "node scripts/trigger-github-action.js wednesday",
     "trigger-thursday": "node scripts/trigger-github-action.js thursday",
-    "trigger-friday": "node scripts/trigger-github-action.js friday"
+    "trigger-friday": "node scripts/trigger-github-action.js friday",
+    "waitlist": "node waitlist-bot.js",
+    "waitlist-test": "TEST_MODE=true node waitlist-bot.js",
+    "waitlist-setup": "node scripts/setup-waitlist.js"
   },
   "dependencies": {
     "node-fetch": "^3.3.0"
