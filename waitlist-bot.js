@@ -240,10 +240,13 @@ class WaitlistBot {
                             if (booked) {
                                 this.log('🎉 Booking successful! Stopping monitoring for this class.');
                                 
+                                // Disable GitHub Actions workflow
+                                await this.disableGitHubWorkflow();
+                                
                                 // Check if we should stop after first booking
                                 if (WAITLIST_CONFIG.ADVANCED.stopAfterFirstBooking) {
                                     this.log('🛑 Stopping monitoring after first successful booking.');
-                                    await this.notificationService.notifyMonitoringStopped('First successful booking completed');
+                                    await this.notificationService.notifyMonitoringStopped('First successful booking completed - All monitoring disabled');
                                     return;
                                 }
                             }
@@ -284,6 +287,39 @@ class WaitlistBot {
         }
         
         this.log('🛑 Waitlist Bot stopped.');
+    }
+
+    async disableGitHubWorkflow() {
+        try {
+            if (!process.env.GITHUB_ACTIONS || !process.env.GITHUB_TOKEN) {
+                this.log('ℹ️ Not running in GitHub Actions or no token available, skipping workflow disable');
+                return;
+            }
+
+            this.log('🔧 Disabling GitHub Actions workflow...');
+            
+            // Create a commit that disables the workflow by renaming it
+            const { execSync } = await import('child_process');
+            
+            // Rename the workflow file to disable it
+            const workflowPath = '.github/workflows/waitlist-bot.yml';
+            const disabledPath = '.github/workflows/waitlist-bot.yml.disabled';
+            
+            if (fs.existsSync(workflowPath)) {
+                fs.renameSync(workflowPath, disabledPath);
+                
+                // Commit the change
+                execSync('git add .github/workflows/waitlist-bot.yml.disabled', { stdio: 'inherit' });
+                execSync('git rm .github/workflows/waitlist-bot.yml', { stdio: 'inherit' });
+                execSync('git commit -m "🤖 Auto-disable waitlist bot workflow after successful booking"', { stdio: 'inherit' });
+                execSync('git push', { stdio: 'inherit' });
+                
+                this.log('✅ GitHub Actions workflow disabled successfully!');
+                this.log('📧 All future scheduled runs have been cancelled.');
+            }
+        } catch (error) {
+            this.log(`❌ Error disabling GitHub workflow: ${error.message}`);
+        }
     }
 
     stop() {

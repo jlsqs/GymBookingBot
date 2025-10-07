@@ -90,7 +90,7 @@ export const WAITLIST_CONFIG = {
         allowMultipleBookings: false,
         
         // Stop monitoring after first successful booking
-        stopAfterFirstBooking: false,
+        stopAfterFirstBooking: true,
         
         // Timezone for logging and notifications
         timezone: 'Europe/Paris'
