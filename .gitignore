@@ -109,6 +109,9 @@ Thumbs.db
 # Class data exports
 classes_*.json
 
+# Lock files
+waitlist-bot.lock
+
 # Backup files
 *.bak
 *.backup

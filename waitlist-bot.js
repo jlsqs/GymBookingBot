@@ -21,6 +21,7 @@ class WaitlistBot {
         this.startTime = new Date();
         this.targetClasses = [...WAITLIST_CONFIG.TARGET_CLASSES];
         this.bookingAttempts = new Map(); // Track booking attempts per class
+        this.MAX_RUNTIME = 5.5 * 60 * 60 * 1000; // 5.5 hours in milliseconds
     }
 
     createTokensFromSecrets() {
@@ -160,6 +161,29 @@ class WaitlistBot {
     }
 
     async startMonitoring() {
+        // Check if another instance is already running
+        const lockFile = 'waitlist-bot.lock';
+        if (fs.existsSync(lockFile)) {
+            const lockTime = fs.statSync(lockFile).mtime;
+            const lockAge = Date.now() - lockTime.getTime();
+            
+            // If lock is older than 6 hours, remove it (stale lock)
+            if (lockAge > 6 * 60 * 60 * 1000) {
+                fs.unlinkSync(lockFile);
+                this.log('🗑️ Removed stale lock file');
+            } else {
+                this.log('⏸️ Another waitlist bot instance is already running. Exiting...');
+                return;
+            }
+        }
+        
+        // Create lock file
+        fs.writeFileSync(lockFile, JSON.stringify({
+            pid: process.pid,
+            startTime: new Date().toISOString(),
+            targetClasses: this.targetClasses.length
+        }));
+        
         this.log('🚀 Starting Waitlist Bot...');
         this.log(`📋 Monitoring ${this.targetClasses.length} target classes`);
         
@@ -179,6 +203,23 @@ class WaitlistBot {
                     break;
                 }
 
+                // Check if we've hit the GitHub Actions runtime limit (5.5 hours)
+                const runtimeMs = Date.now() - this.startTime.getTime();
+                if (runtimeMs > this.MAX_RUNTIME) {
+                    this.log(`⏰ Max runtime (5.5 hours) reached, stopping gracefully to allow next scheduled run...`);
+                    await this.notificationService.notifyMonitoringStopped(`Max runtime reached, will restart with next scheduled run`);
+                    break;
+                }
+
+                // Log runtime status
+                const currentRuntimeMs = Date.now() - this.startTime.getTime();
+                const runtimeHours = Math.floor(currentRuntimeMs / (1000 * 60 * 60));
+                const runtimeMinutes = Math.floor((currentRuntimeMs % (1000 * 60 * 60)) / (1000 * 60));
+                const remainingMs = this.MAX_RUNTIME - currentRuntimeMs;
+                const remainingHours = Math.floor(remainingMs / (1000 * 60 * 60));
+                const remainingMinutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+                
+                this.log(`⏱️ Runtime: ${runtimeHours}h ${runtimeMinutes}m | Remaining: ${remainingHours}h ${remainingMinutes}m`);
                 this.log('🔍 Checking all target classes...');
                 
                 // Sort classes by priority
@@ -233,6 +274,13 @@ class WaitlistBot {
                 this.log('⏰ Waiting 5 minutes before retrying...');
                 await new Promise(resolve => setTimeout(resolve, 5 * 60 * 1000));
             }
+        }
+        
+        // Clean up lock file
+        const cleanupLockFile = 'waitlist-bot.lock';
+        if (fs.existsSync(cleanupLockFile)) {
+            fs.unlinkSync(cleanupLockFile);
+            this.log('🗑️ Lock file removed');
         }
         
         this.log('🛑 Waitlist Bot stopped.');
