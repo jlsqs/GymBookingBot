@@ -21,7 +21,8 @@
     "waitlist": "node waitlist-bot.js",
     "waitlist-test": "TEST_MODE=true node waitlist-bot.js",
     "waitlist-setup": "node scripts/setup-waitlist.js",
-    "waitlist-enable": "node scripts/reenable-waitlist.js"
+    "waitlist-enable": "node scripts/reenable-waitlist.js",
+    "waitlist-class": "node scripts/setup-waitlist-class.js"
   },
   "dependencies": {
     "node-fetch": "^3.3.0"
