@@ -5,14 +5,13 @@ export const WAITLIST_CONFIG = {
     // Target classes to monitor for availability
     TARGET_CLASSES: [
         {
-            name: 'bootcamp',
+            name: 'hard training',
             time: '07:30',
-            dayOfWeek: 3, // Wednesday (0=Sunday, 1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday)
-            location: null, // Any location (will match any bootcamp at 07:30 on Wednesday)
-            instructor: 'TBA', // Any instructor (will match Patrice)
-            priority: 1 // Highest priority
+            dayOfWeek: 4, // thursday
+            location: null, // Any location
+            instructor: 'TBA', // Any instructor
+            priority: 1
         }
-        // Add more classes as needed
     ],
 
     // Monitoring intervals (in milliseconds)
