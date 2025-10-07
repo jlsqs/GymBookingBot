@@ -21,7 +21,7 @@ class WaitlistBot {
         this.startTime = new Date();
         this.targetClasses = [...WAITLIST_CONFIG.TARGET_CLASSES];
         this.bookingAttempts = new Map(); // Track booking attempts per class
-        this.MAX_RUNTIME = 5.5 * 60 * 60 * 1000; // 5.5 hours in milliseconds
+        this.MAX_RUNTIME = 4.5 * 60 * 60 * 1000; // 4.5 hours in milliseconds
     }
 
     createTokensFromSecrets() {
@@ -203,10 +203,10 @@ class WaitlistBot {
                     break;
                 }
 
-                // Check if we've hit the GitHub Actions runtime limit (5.5 hours)
+                // Check if we've hit the GitHub Actions runtime limit (4.5 hours)
                 const runtimeMs = Date.now() - this.startTime.getTime();
                 if (runtimeMs > this.MAX_RUNTIME) {
-                    this.log(`⏰ Max runtime (5.5 hours) reached, stopping gracefully to allow next scheduled run...`);
+                    this.log(`⏰ Max runtime (4.5 hours) reached, stopping gracefully to allow next scheduled run...`);
                     await this.notificationService.notifyMonitoringStopped(`Max runtime reached, will restart with next scheduled run`);
                     break;
                 }

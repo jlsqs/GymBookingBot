@@ -1,13 +1,14 @@
 name: Waitlist Bot
 
+# Prevent multiple runs at the same time
+concurrency:
+  group: waitlist-bot
+  cancel-in-progress: false
+
 on:
   schedule:
-    # Run every 5 minutes during peak hours (6-9 AM, 12-2 PM, 6-8 PM UTC)
-    - cron: '*/5 6-8,12-13,18-19 * * *'
-    # Run every 15 minutes during normal hours
-    - cron: '*/15 9-11,14-17,20-23 * * *'
-    # Run every 30 minutes during night hours
-    - cron: '*/30 0-5 * * *'
+    # Run every 4 hours to avoid overlaps (4.5 hour runtime with 4 hour intervals)
+    - cron: '0 */4 * * *'
   workflow_dispatch:
     inputs:
       test_mode:
@@ -19,6 +20,8 @@ on:
 jobs:
   waitlist-monitor:
     runs-on: ubuntu-latest
+    # Reduce email notifications for cancelled runs
+    if: "!cancelled()"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
