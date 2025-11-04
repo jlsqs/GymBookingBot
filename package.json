@@ -25,6 +25,7 @@
     "waitlist-class": "node scripts/setup-waitlist-class.js"
   },
   "dependencies": {
-    "node-fetch": "^3.3.0"
+    "node-fetch": "^3.3.0",
+    "luxon": "^3.5.0"
   }
 }

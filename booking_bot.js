@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import AuthManager, { CONFIG } from './auth_manager.js';
+import { DateTime } from 'luxon';
 
 // Class preferences by weekday (same as your Puppeteer bot)
 const CLASS_TIMES = {
@@ -179,22 +180,15 @@ async function findAndBookClass(auth) {
         log(`   Available spots: ${targetClass.placesFree}/${targetClass.placesTotal}`);
         log(`   ID: ${targetClass.id}\n`);
 
-        // Calculate booking time: TODAY at the same time as the class + 3 seconds
-        // (Booking opens 5 days before the class, which is TODAY)
-        // Convert to UTC for consistent timing
-        const now = new Date();
-        const classTimeUTC = new Date(classDate);
-        
-        // Get the time components from the class (which is in France time)
-        const classHour = classTimeUTC.getHours();
-        const classMinute = classTimeUTC.getMinutes();
-        
-        // Create booking time in UTC (France time - 2 hours)
-        const bookingTime = new Date(now);
-        bookingTime.setUTCHours(classHour - 2, classMinute, 3, 0); // Convert France time to UTC
-        
-        log(`🕐 Booking opens at: ${bookingTime.toLocaleString('fr-FR')} (France time)`);
-        log(`🕐 Booking opens at: ${bookingTime.toISOString()} (UTC)`);
+        // Calculate booking time in Europe/Paris (DST-safe):
+        // Booking opens 2 hours before the class, France local time, +3 seconds
+        const classParis = DateTime.fromJSDate(classDate, { zone: 'Europe/Paris' });
+        const bookingParis = classParis.minus({ hours: 2 }).set({ second: 3, millisecond: 0 });
+        const bookingTime = bookingParis.toJSDate(); // JS Date in local zone of runtime, but instant is correct
+        const bookingUtcIso = bookingParis.toUTC().toISO();
+
+        log(`🕐 Booking opens at: ${bookingParis.toFormat('dd/LL/yyyy HH:mm:ss')} (France time)`);
+        log(`🕐 Booking opens at: ${bookingUtcIso} (UTC)`);
         
         // Wait until booking time (unless in test mode)
         if (TEST_MODE) {
