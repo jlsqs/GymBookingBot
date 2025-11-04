@@ -6,8 +6,8 @@ export const WAITLIST_CONFIG = {
     TARGET_CLASSES: [
         {
             name: 'bootcamp',
-            time: '07:30',
-            dayOfWeek: 3, // thursday
+            time: '10:00',
+            dayOfWeek: 4, // thursday
             location: null, // Any location
             instructor: 'TBA', // Any instructor
             priority: 1
