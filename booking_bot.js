@@ -103,9 +103,23 @@ async function waitUntilBookingTime(targetTime) {
 // Main booking logic
 async function findAndBookClass(auth) {
     try {
-        // Calculate target date (5 days from now)
+        // Calculate target date (5 days from now) or override via env for testing
         const targetDate = new Date();
-        targetDate.setDate(targetDate.getDate() + DAYS_IN_ADVANCE);
+        if (process.env.FORCE_DATE) {
+            const forced = new Date(process.env.FORCE_DATE);
+            if (!Number.isNaN(forced.getTime())) {
+                targetDate.setTime(forced.getTime());
+            }
+        } else if (process.env.FORCE_DAYS) {
+            const delta = parseInt(process.env.FORCE_DAYS, 10);
+            if (!Number.isNaN(delta)) {
+                targetDate.setDate(targetDate.getDate() + delta);
+            } else {
+                targetDate.setDate(targetDate.getDate() + DAYS_IN_ADVANCE);
+            }
+        } else {
+            targetDate.setDate(targetDate.getDate() + DAYS_IN_ADVANCE);
+        }
         const targetWeekday = targetDate.getDay();
         const targetDateStr = targetDate.toLocaleDateString('fr-FR', {
             day: '2-digit',
@@ -181,10 +195,24 @@ async function findAndBookClass(auth) {
         log(`   ID: ${targetClass.id}\n`);
 
         // Calculate booking time in Europe/Paris (DST-safe):
-        // Booking opens 2 hours before the class, France local time, +3 seconds
+        // Booking opens TODAY at the same time as the class, minus 2 hours, +3 seconds
+        // (Booking opens 5 days before the class, which is TODAY)
         const classParis = DateTime.fromJSDate(classDate, { zone: 'Europe/Paris' });
-        const bookingParis = classParis.minus({ hours: 2 }).set({ second: 3, millisecond: 0 });
-        const bookingTime = bookingParis.toJSDate(); // JS Date in local zone of runtime, but instant is correct
+        const now = DateTime.now().setZone('Europe/Paris');
+        
+        // Get the hour and minute from the class time
+        const classHour = classParis.hour;
+        const classMinute = classParis.minute;
+        
+        // Create booking time for TODAY at (class time - 2 hours)
+        const bookingParis = now.set({ 
+            hour: classHour - 2, 
+            minute: classMinute, 
+            second: 3, 
+            millisecond: 0 
+        });
+        
+        const bookingTime = bookingParis.toJSDate();
         const bookingUtcIso = bookingParis.toUTC().toISO();
 
         log(`🕐 Booking opens at: ${bookingParis.toFormat('dd/LL/yyyy HH:mm:ss')} (France time)`);
