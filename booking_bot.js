@@ -195,7 +195,7 @@ async function findAndBookClass(auth) {
         log(`   ID: ${targetClass.id}\n`);
 
         // Calculate booking time in Europe/Paris (DST-safe):
-        // Booking opens TODAY at the same time as the class, minus 2 hours, +3 seconds
+        // Booking opens TODAY at the same time as the class + 3 seconds
         // (Booking opens 5 days before the class, which is TODAY)
         const classParis = DateTime.fromJSDate(classDate, { zone: 'Europe/Paris' });
         const now = DateTime.now().setZone('Europe/Paris');
@@ -204,9 +204,9 @@ async function findAndBookClass(auth) {
         const classHour = classParis.hour;
         const classMinute = classParis.minute;
         
-        // Create booking time for TODAY at (class time - 2 hours)
+        // Create booking time for TODAY at the same time as the class
         const bookingParis = now.set({ 
-            hour: classHour - 2, 
+            hour: classHour, 
             minute: classMinute, 
             second: 3, 
             millisecond: 0 
