@@ -6,7 +6,7 @@ export const WAITLIST_CONFIG = {
     TARGET_CLASSES: [
         {
             name: 'hard training',
-            time: '08:35',
+            time: '07:30',
             dayOfWeek: 4, // thursday
             location: null, // Any location
             instructor: 'TBA', // Any instructor
