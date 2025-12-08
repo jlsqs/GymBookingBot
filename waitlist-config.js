@@ -6,8 +6,8 @@ export const WAITLIST_CONFIG = {
     TARGET_CLASSES: [
         {
             name: 'cross training',
-            time: '12:00',
-            dayOfWeek: 6, // thursday
+            time: '08:40',
+            dayOfWeek: 2, // thursday
             location: null, // Any location
             instructor: 'TBA', // Any instructor
             priority: 1
