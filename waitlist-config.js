@@ -7,7 +7,7 @@ export const WAITLIST_CONFIG = {
         {
             name: 'calisthenics',
             time: '10:00',
-            dayOfWeek: 2, // thursday
+            dayOfWeek: 3, // thursday
             location: null, // Any location
             instructor: 'TBA', // Any instructor
             priority: 1
