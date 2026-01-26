@@ -5,9 +5,9 @@ export const WAITLIST_CONFIG = {
     // Target classes to monitor for availability
     TARGET_CLASSES: [
         {
-            name: 'calisthenics',
-            time: '10:05',
-            dayOfWeek: 3, // thursday
+            name: 'cross training',
+            time: '10:15',
+            dayOfWeek: 7, // thursday
             location: null, // Any location
             instructor: 'TBA', // Any instructor
             priority: 1
