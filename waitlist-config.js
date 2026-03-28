@@ -5,7 +5,7 @@ export const WAITLIST_CONFIG = {
     // Target classes to monitor for availability
     TARGET_CLASSES: [
         {
-            name: 'all for the butt',
+            name: 'all 4 the butt',
             time: '16:50',
             dayOfWeek: 6, // thursday
             location: null, // Any location
