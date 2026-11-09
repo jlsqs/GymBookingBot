@@ -57,7 +57,7 @@ jobs:
           SECRETS_PAT: ${{ secrets.SECRETS_PAT }}
         run: |
           echo "🤖 Starting Waitlist Bot..."
-          echo "📅 Monitoring: Wednesday Bootcamp at 07:30"
+          node --input-type=module -e "import { ConfigHelpers } from './waitlist-config.js'; for (const t of ConfigHelpers.getTargetClassesByPriority()) console.log('📅 Monitoring: ' + ConfigHelpers.describeTarget(t));"
           echo "⏰ Time: $(date)"
           echo "🧪 Test Mode: ${{ inputs.test_mode }}"
           
