@@ -24,6 +24,21 @@ This setup uses GitHub Actions as your webhook and [cron-job.org](https://cron-j
    - `ACCESS_TOKEN`: (from your tokens.json)
    - `REFRESH_TOKEN`: (from your tokens.json)
    - `TOKEN_EXPIRY`: (from your tokens.json)
+   - `SECRETS_PAT`: a personal access token that can write this repo's secrets (see below)
+
+### Keeping tokens fresh (`SECRETS_PAT`)
+
+Every time the bot refreshes its access token, the API also issues a **new refresh token**
+and the old one stops working. The bot writes the new tokens back to the
+`ACCESS_TOKEN`, `REFRESH_TOKEN` and `TOKEN_EXPIRY` secrets, which needs a token that is allowed to edit secrets:
+
+1. Go to https://github.com/settings/personal-access-tokens/new (fine-grained token)
+2. Repository access: **Only select repositories** → `GymBookingBot`
+3. Repository permissions: **Secrets → Read and write**
+4. Generate it and save it as the repository secret `SECRETS_PAT`
+
+Without it the bot still runs, but the stored refresh token goes stale and you will
+eventually see `Invalid refresh token` and have to re-authenticate by hand.
 
 ## 🔑 Step 2: Create GitHub Personal Access Token
 
@@ -186,8 +201,10 @@ node scripts/trigger-github-action.js auto
    - Verify tokens.json values in secrets
    - Check Action logs for errors
 
-3. **Authentication errors:**
-   - Update tokens locally first
+3. **Authentication errors (`Invalid refresh token`):**
+   - The bot now stops immediately and the run fails instead of retrying for hours
+   - Re-authenticate locally (`FIRST_TIME_SETUP = true` in auth_manager.js with a fresh `identity_request`)
+   - Run `node scripts/setup-github-secrets.js` to print the new values
    - Update GitHub Secrets with new tokens
    - Re-run the workflow
 

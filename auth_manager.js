@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import fs from 'fs';
+import { execFileSync } from 'child_process';
 
 const CONFIG = {
     baseURL: 'https://api.xplor-active.com',
@@ -9,6 +10,21 @@ const CONFIG = {
     userAccountId: '3d48d22c-4e09-430e-a4d0-d65d58a5bd0d',
     tokenFile: './tokens.json' // Store tokens locally
 };
+
+// Thrown when the API rejects the refresh token. Retrying cannot fix this:
+// someone has to re-authenticate and update the stored tokens.
+export class AuthError extends Error {
+    constructor(message, details) {
+        super(message);
+        this.name = 'AuthError';
+        this.code = 'AUTH_INVALID';
+        this.details = details;
+    }
+}
+
+export function isAuthError(error) {
+    return error?.code === 'AUTH_INVALID';
+}
 
 class AuthManager {
     constructor() {
@@ -42,6 +58,43 @@ class AuthManager {
         };
         fs.writeFileSync(CONFIG.tokenFile, JSON.stringify(data, null, 2));
         console.log('Tokens saved to file');
+        this.syncTokensToGitHubSecrets();
+    }
+
+    // In GitHub Actions, write refreshed tokens back to the repository secrets.
+    // The API rotates the refresh token on every refresh, so without this the
+    // secrets keep an old refresh token that eventually stops working.
+    // Requires a SECRETS_PAT with permission to write Actions secrets.
+    syncTokensToGitHubSecrets() {
+        if (!process.env.GITHUB_ACTIONS) return;
+
+        const pat = process.env.SECRETS_PAT;
+        const repo = process.env.GITHUB_REPOSITORY;
+        if (!pat || !repo) {
+            console.log('⚠️ SECRETS_PAT not set: refreshed tokens will NOT be saved to GitHub Secrets');
+            return;
+        }
+
+        const secrets = {
+            ACCESS_TOKEN: this.accessToken,
+            REFRESH_TOKEN: this.refreshToken,
+            TOKEN_EXPIRY: String(this.tokenExpiry)
+        };
+
+        try {
+            for (const [name, value] of Object.entries(secrets)) {
+                // Pass the value on stdin so it never appears in the process list or logs
+                execFileSync('gh', ['secret', 'set', name, '--repo', repo], {
+                    input: value,
+                    env: { ...process.env, GH_TOKEN: pat },
+                    stdio: ['pipe', 'ignore', 'pipe']
+                });
+            }
+            console.log('🔐 Refreshed tokens saved to GitHub Secrets');
+        } catch (error) {
+            const stderr = error.stderr?.toString().trim();
+            console.error(`✗ Failed to save tokens to GitHub Secrets: ${stderr || error.message}`);
+        }
     }
 
     // Parse JWT to get expiry time
@@ -156,9 +209,17 @@ class AuthManager {
                 return true;
             } else {
                 console.error('✗ Token refresh failed:', data);
+                // 4xx means the refresh token itself was rejected, so retrying is pointless
+                if (response.status >= 400 && response.status < 500) {
+                    throw new AuthError(
+                        'Refresh token was rejected. Re-authenticate and update the ACCESS_TOKEN, REFRESH_TOKEN and TOKEN_EXPIRY secrets.',
+                        data
+                    );
+                }
                 return false;
             }
         } catch (error) {
+            if (isAuthError(error)) throw error;
             console.error('✗ Token refresh error:', error.message);
             return false;
         }

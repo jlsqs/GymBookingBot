@@ -62,6 +62,9 @@ jobs:
         }' > tokens.json
         
     - name: Run booking bot
+      env:
+        # Lets the bot save rotated tokens back to the repository secrets
+        SECRETS_PAT: ${{ secrets.SECRETS_PAT }}
       run: |
         echo "🤖 Starting GymBookingBot..."
         echo "📅 Triggered by: ${{ github.event.action }}"
