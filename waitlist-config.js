@@ -7,7 +7,7 @@ export const WAITLIST_CONFIG = {
         {
             name: 'calisthenics',
             time: '10:00',
-            dayOfWeek: 3, // thursday
+            dayOfWeek: 3, // 0=Sunday, 1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday
             location: null, // Any location
             instructor: 'TBA', // Any instructor
             priority: 1
@@ -120,6 +120,16 @@ export const ConfigHelpers = {
         }
         
         return WAITLIST_CONFIG.MONITORING_INTERVALS.NORMAL_HOURS;
+    },
+
+    // Human-readable one-line description of a target class,
+    // e.g. "Wednesday calisthenics at 10:00 (any location, any instructor)"
+    describeTarget(target) {
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const day = days[target.dayOfWeek] ?? `day ${target.dayOfWeek}`;
+        const location = target.location ? `at ${target.location}` : 'any location';
+        const instructor = target.instructor && target.instructor !== 'TBA' ? `with ${target.instructor}` : 'any instructor';
+        return `${day} ${target.name} at ${target.time} (${location}, ${instructor})`;
     },
 
     // Get target classes sorted by priority

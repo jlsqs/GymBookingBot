@@ -187,7 +187,10 @@ class WaitlistBot {
         }));
         
         this.log('🚀 Starting Waitlist Bot...');
-        this.log(`📋 Monitoring ${this.targetClasses.length} target classes`);
+        this.log(`📋 Monitoring ${this.targetClasses.length} target class(es):`);
+        for (const target of ConfigHelpers.getTargetClassesByPriority()) {
+            this.log(`   📅 ${ConfigHelpers.describeTarget(target)}`);
+        }
         
         // Send start notification
         await this.notificationService.notifyMonitoringStarted(this.targetClasses);
