@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import AuthManager from './auth_manager.js';
+import AuthManager, { isAuthError } from './auth_manager.js';
 import { getClasses } from './api_client.js';
 import { bookClass } from './api_client.js';
 import { WAITLIST_CONFIG, ConfigHelpers } from './waitlist-config.js';
@@ -97,6 +97,7 @@ class WaitlistBot {
             
             return availability;
         } catch (error) {
+            if (isAuthError(error)) throw error;
             this.log(`❌ Error checking class availability: ${error.message}`);
             return null;
         }
@@ -141,6 +142,7 @@ class WaitlistBot {
                 return false;
             }
         } catch (error) {
+            if (isAuthError(error)) throw error;
             this.log(`❌ Booking error: ${error.message}`);
             await this.notificationService.notifyError(error, `Booking attempt for ${classInfo.name}`);
             return false;
@@ -272,6 +274,13 @@ class WaitlistBot {
                 await new Promise(resolve => setTimeout(resolve, interval));
                 
             } catch (error) {
+                if (isAuthError(error)) {
+                    this.log(`❌ ${error.message}`);
+                    this.log('🛑 Stopping: the bot cannot do anything until the tokens are replaced.');
+                    await this.notificationService.notifyError(error, 'Authentication failed');
+                    this.fatalError = error;
+                    break;
+                }
                 this.log(`❌ Error in monitoring loop: ${error.message}`);
                 await this.notificationService.notifyError(error, 'Monitoring loop error');
                 this.log('⏰ Waiting 5 minutes before retrying...');
@@ -287,6 +296,10 @@ class WaitlistBot {
         }
         
         this.log('🛑 Waitlist Bot stopped.');
+
+        if (this.fatalError) {
+            throw this.fatalError;
+        }
     }
 
     async disableGitHubWorkflow() {

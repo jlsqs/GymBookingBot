@@ -53,6 +53,8 @@ jobs:
           USER_EMAIL: ${{ secrets.USER_EMAIL }}
           GITHUB_ACTIONS: true
           TEST_MODE: ${{ inputs.test_mode }}
+          # Lets the bot save rotated tokens back to the repository secrets
+          SECRETS_PAT: ${{ secrets.SECRETS_PAT }}
         run: |
           echo "🤖 Starting Waitlist Bot..."
           echo "📅 Monitoring: Wednesday Bootcamp at 07:30"
